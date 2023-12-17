@@ -2,6 +2,17 @@ import cv2
 import face_recognition
 import pickle
 import os
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+from firebase_admin import storage
+
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred,{
+    'databaseURL':"https://app-face-cam-default-rtdb.firebaseio.com/",
+    'storageBucket':"app-face-cam.appspot.com"
+})
+
 
 # Importing Peoples Images
 folderPath = 'Images'
@@ -11,7 +22,11 @@ peopleIds = []
 for path in PathList:
     imgList.append(cv2.imread(os.path.join(folderPath,path)))
     peopleIds.append(path.split('.png')[0])
-print(peopleIds)
+
+    fileName = f'{folderPath}/{path}'
+    bucket = storage.bucket()
+    blob = bucket.blob(fileName)
+    blob.upload_from_filename(fileName)
 
 def findEncondings(imagesList):
     encodeList = []
